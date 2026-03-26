@@ -6,31 +6,54 @@
 
 只要这些配置没被清掉，换仓库克隆也会继续报错。
 
-## 先解决你现在这个报错（No such file or directory）
+---
 
-你贴的日志是：找不到 `scripts/fix_github_desktop_7zip_error.py`。这通常是以下两种情况：
-1. 当前目录不是这个仓库根目录。
-2. 本地仓库还没拉到最新提交（脚本文件还不存在）。
+## 你当前这条报错的直接原因
 
-请先执行：
+你现在看到的是：
+
+```text
+python ... can't open file ...\fix_github_desktop_7zip_error.py: [Errno 2] No such file or directory
+```
+
+这表示**当前这个仓库目录里没有该脚本文件**。最常见原因：
+1. 你拉取的是不含该脚本的分支/提交（比如 PR 还没合并到你当前分支）。
+2. 当前目录不是你以为的那个仓库根目录。
+
+先确认：
 
 ```bash
-# Windows CMD
 cd /d D:\Users\Administrator\Documents\origin-
 dir
-
-# 需要看到 scripts 目录和 fix_github_desktop_7zip_error.py（根目录启动器）
 ```
 
-如果没看到，请更新：
+如果目录里看不到 `fix_github_desktop_7zip_error.py`，说明本地仓库本身就没有这个文件（不是 Python 问题）。
+
+---
+
+## 不依赖仓库脚本的“立即修复”方案（推荐你先用这个）
+
+在 CMD 里直接执行下面三条（可立即生效）：
 
 ```bash
-git pull
+git config --global --unset-all core.editor
+git config --global --unset-all diff.tool
+git config --global --unset-all merge.tool
 ```
 
-## 一键修复（推荐）
+然后打开这个文件（若存在）：
 
-在仓库根目录执行（推荐这个，不容易输错路径）：
+```text
+%APPDATA%\GitHub Desktop\settings.json
+```
+
+把里面包含 `7-Zip` 的路径删掉（常见在 external editor / shell 相关字段），保存后重启 GitHub Desktop。
+
+---
+
+## 一键修复（当仓库里有脚本时）
+
+在仓库根目录执行：
 
 ```bash
 python fix_github_desktop_7zip_error.py --dry-run
@@ -41,22 +64,7 @@ python fix_github_desktop_7zip_error.py
 1. 扫描并清理 Git 配置中包含 `7-Zip` 的坏路径。
 2. 扫描并清理 GitHub Desktop `settings.json` 中包含 `7-Zip` 的字段（并自动备份 `.bak`）。
 
-## 手工兜底（如果你不想跑脚本）
-
-### 1) GitHub Desktop 内修改
-- 打开：`File -> Options -> Integrations`
-- 把 **External editor** 改成可用编辑器（如 VS Code）
-- 把 **Shell** 改成 Git Bash / PowerShell（不要指向失效路径）
-
-### 2) 清理 Git 全局配置
-
-```bash
-git config --global --unset-all core.editor
-git config --global --unset-all diff.tool
-git config --global --unset-all merge.tool
-```
-
-> `--system` 级配置可能需要管理员权限。
+---
 
 ## 为什么会“每次克隆都报错”
 
