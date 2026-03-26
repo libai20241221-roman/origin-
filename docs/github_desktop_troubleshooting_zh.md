@@ -1,33 +1,32 @@
 # GitHub Desktop 报错：`can't find "7-Zip 9.20 ..."` 处理说明
 
-这个报错通常不是本仓库代码问题，而是**本机 Git/GitHub Desktop 配置**里某个工具路径损坏（常见于 editor/difftool/mergetool 被写成了无效的 7-Zip 路径）。
+你这个报错**反复在“重新克隆后”出现**，通常说明问题不在仓库代码，而在**本机持久化配置**：
+- Git 配置（`core.editor` / `diff.tool` / `merge.tool`）
+- GitHub Desktop 自身 `settings.json`（External editor / Shell 路径）
 
-## 快速修复步骤（Windows）
+只要这些配置没被清掉，换仓库克隆也会继续报错。
 
-1. 在仓库根目录打开终端（PowerShell / Git Bash）。
-2. 先做检测（不改动）：
+## 一键修复（推荐）
+
+在仓库根目录打开 PowerShell / Git Bash：
 
 ```bash
 python scripts/fix_github_desktop_7zip_error.py --dry-run
-```
-
-3. 确认有异常项后，执行清理：
-
-```bash
 python scripts/fix_github_desktop_7zip_error.py
 ```
 
-4. 重启 GitHub Desktop。
+脚本会做两件事：
+1. 扫描并清理 Git 配置中包含 `7-Zip` 的坏路径。
+2. 扫描并清理 GitHub Desktop `settings.json` 中包含 `7-Zip` 的字段（并自动备份 `.bak`）。
 
-## 如果仍报错
+## 手工兜底（如果你不想跑脚本）
 
-请在 GitHub Desktop 里检查：
-- `File -> Options -> Integrations` 中的 **External editor** 和 **Shell**。
-- 若路径异常，改为 `Visual Studio Code`（或你已安装的编辑器）。
+### 1) GitHub Desktop 内修改
+- 打开：`File -> Options -> Integrations`
+- 把 **External editor** 改成可用编辑器（如 VS Code）
+- 把 **Shell** 改成 Git Bash / PowerShell（不要指向失效路径）
 
-## 手工命令（可选）
-
-如果你知道具体坏掉的键，也可以手工执行：
+### 2) 清理 Git 全局配置
 
 ```bash
 git config --global --unset-all core.editor
@@ -35,4 +34,8 @@ git config --global --unset-all diff.tool
 git config --global --unset-all merge.tool
 ```
 
-> 注意：`--system` 级配置可能需要管理员权限。
+> `--system` 级配置可能需要管理员权限。
+
+## 为什么会“每次克隆都报错”
+
+因为错误配置在**全局环境**里，而不是某个单独仓库里。新克隆仓库时 GitHub Desktop 仍会读取同一套坏配置，所以会重复弹窗。
