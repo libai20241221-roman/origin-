@@ -6,13 +6,35 @@
 
 只要这些配置没被清掉，换仓库克隆也会继续报错。
 
-## 一键修复（推荐）
+## 先解决你现在这个报错（No such file or directory）
 
-在仓库根目录打开 PowerShell / Git Bash：
+你贴的日志是：找不到 `scripts/fix_github_desktop_7zip_error.py`。这通常是以下两种情况：
+1. 当前目录不是这个仓库根目录。
+2. 本地仓库还没拉到最新提交（脚本文件还不存在）。
+
+请先执行：
 
 ```bash
-python scripts/fix_github_desktop_7zip_error.py --dry-run
-python scripts/fix_github_desktop_7zip_error.py
+# Windows CMD
+cd /d D:\Users\Administrator\Documents\origin-
+dir
+
+# 需要看到 scripts 目录和 fix_github_desktop_7zip_error.py（根目录启动器）
+```
+
+如果没看到，请更新：
+
+```bash
+git pull
+```
+
+## 一键修复（推荐）
+
+在仓库根目录执行（推荐这个，不容易输错路径）：
+
+```bash
+python fix_github_desktop_7zip_error.py --dry-run
+python fix_github_desktop_7zip_error.py
 ```
 
 脚本会做两件事：
