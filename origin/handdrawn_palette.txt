@@ -1,0 +1,10 @@
+# Hand-drawn palette for Origin bar charts
+# Name	R	G	B
+Rose	230	126	128
+Honey	247	191	105
+Sage	141	199	146
+ChalkBlue	123	174	228
+Lavender	180	158	219
+Lake	113	196	201
+Apricot	244	163	129
+Graphite	188	188	188
