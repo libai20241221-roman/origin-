@@ -1,58 +1,48 @@
 // handdrawn_bar_palette.ogs
-// 推荐用法（绝对路径，最稳）：
-// run.section("D:\\your_path\\origin\\handdrawn_bar_palette.ogs", Main);
+// Recommended usage:
+// run.section("D:\\path\\to\\handdrawn_bar_palette.ogs", Main);
 
 [Main]
-// ---- 可配置参数 ----
-if(@NColorStart==0)
-    @NColorStart = 1;
-if(@NColorNum==0)
-    @NColorNum = 8;
+int nColorStart = 1;
+int nColorNum = 8;
 
-// 默认“手绘风”色板（柔和、低饱和）
-color(1) = rgb(230, 126, 128);   // 玫瑰红
-color(2) = rgb(247, 191, 105);   // 蜂蜜黄
-color(3) = rgb(141, 199, 146);   // 鼠尾草绿
-color(4) = rgb(123, 174, 228);   // 粉笔蓝
-color(5) = rgb(180, 158, 219);   // 淡紫
-color(6) = rgb(113, 196, 201);   // 湖水青
-color(7) = rgb(244, 163, 129);   // 杏橙
-color(8) = rgb(188, 188, 188);   // 石墨灰
+color(1) = rgb(230, 126, 128);
+color(2) = rgb(247, 191, 105);
+color(3) = rgb(141, 199, 146);
+color(4) = rgb(123, 174, 228);
+color(5) = rgb(180, 158, 219);
+color(6) = rgb(113, 196, 201);
+color(7) = rgb(244, 163, 129);
+color(8) = rgb(188, 188, 188);
 
-int nLayers = layer.n;
+int nLayers = page.nlayers;
 int iLayer, iPlot;
 
 if(nLayers <= 0)
 {
-    type "[handdrawn_bar_palette] 未检测到有效图层，请先激活一个柱状图窗口。";
+    type "[handdrawn_bar_palette] No active graph page/layer.";
     break 1;
 }
 
 for(iLayer = 1; iLayer <= nLayers; iLayer++)
 {
     layer -s %(iLayer);
-
-    // 修正：图层中的绘图数量应使用 layer.nplots
     int nPlots = layer.nplots;
 
     if(nPlots <= 0)
-    {
-        type "[handdrawn_bar_palette] Layer %(iLayer) 没有可上色的 plot，已跳过。";
         continue;
-    }
 
     for(iPlot = 1; iPlot <= nPlots; iPlot++)
     {
-        int idx = mod(iPlot-1, @NColorNum) + @NColorStart;
-
-        set %(iPlot) -c %(idx);   // 边框色
-        set %(iPlot) -k %(idx);   // 填充色
-        set %(iPlot) -kf 1;       // 实心填充
-        set %(iPlot) -t 15;       // 轻微透明
-        set %(iPlot) -w 1.2;      // 轻微加粗边框
+        int idx = mod(iPlot-1, nColorNum) + nColorStart;
+        set %(iPlot) -c %(idx);
+        set %(iPlot) -k %(idx);
+        set %(iPlot) -kf 1;
+        set %(iPlot) -t 15;
+        set %(iPlot) -w 1.2;
     }
 
     legendupdate mode:=1;
 }
 
-type "[handdrawn_bar_palette] 已完成：柱色与图例已更新为手绘风色板。";
+type "[handdrawn_bar_palette] done.";
