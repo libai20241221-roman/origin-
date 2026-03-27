@@ -9,39 +9,27 @@
 - `scripts/generate_handdrawn_palette.py`：生成统一色板文件与预览文档。
 - `origin/handdrawn_palette.txt`：导出的 RGB 色板。
 
-## 1) 生成色板（可选）
-在项目根目录运行：
-
-```bash
-python3 scripts/generate_handdrawn_palette.py
-```
-
-## 2) 在 Origin 里应用到柱状图
+## 在 Origin 里应用到柱状图
 1. 打开你的柱状图页面，并激活该 Graph 窗口。
 2. 打开 `Script Window`。
-3. **优先用绝对路径执行**（避免“无反应”）：
+3. 用绝对路径执行：
 
 ```labtalk
 run.section("D:\\你的路径\\origin\\handdrawn_bar_palette.ogs", Main);
 ```
 
-> 例如：`run.section("D:\\Users\\Administrator\\Documents\\origin-\\origin\\handdrawn_bar_palette.ogs", Main);`
+执行时会看到：
+- `[handdrawn_bar_palette] applying...`
+- `[handdrawn_bar_palette] done.`
 
-执行后会自动：
-- 按色板给每个柱（或每个数据绘图）上色。
-- 同步更新图例颜色样式。
-- 增加少量透明度和描边粗细，让视觉更接近手绘标记笔效果。
-
-## 3) 如果“执行后没反应”
+## 如果“只有 applying 没有变化”
 请按下面检查：
-1. 你是否激活的是 **Graph** 窗口，而不是工作表窗口。
-2. 是否使用了绝对路径（最常见问题是相对路径找不到文件）。
-3. 查看 Script Window 是否出现：
-   - `未检测到有效图层`（说明当前不是有效图页）
-   - `Layer x 没有可上色的 plot`（说明当前图层里没有柱图数据）
-4. 确认图中确实是 Bar/Column plot，而不是线图或散点图。
+1. 点击图中的某一组柱子，确保当前图层里有激活 plot。
+2. 再执行一次脚本。
+3. 若是多图层页面，先只保留 1 个图层测试是否生效。
+4. 确认图类型是 Bar/Column（线图/散点图视觉变化可能不明显）。
 
-## 4) 自定义色板
+## 自定义色板
 在 `origin/handdrawn_bar_palette.ogs` 中修改：
 
 ```labtalk

@@ -28,20 +28,17 @@ if(nLayers <= 0)
 for(iLayer = 1; iLayer <= nLayers; iLayer++)
 {
     layer -s %(iLayer);
-    int nPlots = layer.nplots;
 
-    if(nPlots <= 0)
-        continue;
-
-    for(iPlot = 1; iPlot <= nPlots; iPlot++)
+    // 经验做法：逐个激活前 20 个 plot（不存在的索引会被忽略）
+    for(iPlot = 1; iPlot <= 20; iPlot++)
     {
+        layer -i %(iPlot);
         int idx = mod(iPlot-1, nColorNum) + nColorStart;
-        range rP = %(iLayer)!%(iPlot);
-        set rP -c %(idx);
-        set rP -k %(idx);
-        set rP -kf 1;
-        set rP -t 15;
-        set rP -w 1.2;
+        set -c %(idx);
+        set -k %(idx);
+        set -kf 1;
+        set -t 15;
+        set -w 1.2;
     }
 
     legendupdate mode:=1;
