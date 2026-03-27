@@ -1,8 +1,9 @@
 // handdrawn_bar_palette.ogs
 // Recommended usage:
-// run.section("D:\\path\\to\\handdrawn_bar_palette.ogs", Main);
+// run.section("D:\path\to\handdrawn_bar_palette.ogs", Main);
 
 [Main]
+type "[handdrawn_bar_palette] applying...";
 int nColorStart = 1;
 int nColorNum = 8;
 
@@ -35,11 +36,12 @@ for(iLayer = 1; iLayer <= nLayers; iLayer++)
     for(iPlot = 1; iPlot <= nPlots; iPlot++)
     {
         int idx = mod(iPlot-1, nColorNum) + nColorStart;
-        set %(iPlot) -c %(idx);
-        set %(iPlot) -k %(idx);
-        set %(iPlot) -kf 1;
-        set %(iPlot) -t 15;
-        set %(iPlot) -w 1.2;
+        range rP = %(iLayer)!%(iPlot);
+        set rP -c %(idx);
+        set rP -k %(idx);
+        set rP -kf 1;
+        set rP -t 15;
+        set rP -w 1.2;
     }
 
     legendupdate mode:=1;

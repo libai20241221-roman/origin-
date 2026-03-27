@@ -62,6 +62,7 @@ def make_ogs(style_name: str, palette: list[str], transparency: int, line_width:
         lines.append(f"color({i}) = rgb({r}, {g}, {b});")
 
     lines += [
+        "type \"[StyleStudio] applying...\";",
         "int nLayers = page.nlayers;",
         "int iLayer, iPlot;",
         "if(nLayers <= 0) { type \"[StyleStudio] No active graph page/layer.\"; break 1; }",
@@ -73,11 +74,12 @@ def make_ogs(style_name: str, palette: list[str], transparency: int, line_width:
         "    for(iPlot = 1; iPlot <= nPlots; iPlot++)",
         "    {",
         "        int idx = mod(iPlot-1, nColorNum) + nColorStart;",
-        "        set %(iPlot) -c %(idx);",
-        "        set %(iPlot) -k %(idx);",
-        f"        set %(iPlot) -kf {fill_mode};",
-        f"        set %(iPlot) -t {transparency};",
-        f"        set %(iPlot) -w {line_width};",
+        "        range rP = %(iLayer)!%(iPlot);",
+        "        set rP -c %(idx);",
+        "        set rP -k %(idx);",
+        f"        set rP -kf {fill_mode};",
+        f"        set rP -t {transparency};",
+        f"        set rP -w {line_width};",
         "    }",
         "    legendupdate mode:=1;",
         "}",
