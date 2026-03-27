@@ -7,13 +7,17 @@
 - 一键生成 `.ogs`，并复制 Origin 可执行命令
 
 ## 0) 不打包也能直接双击运行（推荐先用）
-如果你遇到 `pip install pyinstaller` 报错，可以先双击：
+如果你遇到 `pip install pyinstaller` 报错，直接双击仓库根目录：
 
 ```text
-scripts\run_origin_style_studio.bat
+run_origin_style_studio.bat
 ```
 
-它会直接启动 GUI（依赖本机 Python），不需要先打包 EXE。
+> 如果命令行运行，请确保当前目录是仓库根目录后再执行：
+
+```bash
+.\run_origin_style_studio.bat
+```
 
 ## 1) 安装打包工具（仅一次）
 

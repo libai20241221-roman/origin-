@@ -13,7 +13,7 @@ python scripts/generate_handdrawn_palette.py
 
 ## 可点击运行（无需先打包）
 ```bash
-scripts\run_origin_style_studio.bat
+run_origin_style_studio.bat
 ```
 
 ## 可点击运行（EXE 打包）
