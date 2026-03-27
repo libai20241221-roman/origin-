@@ -1,11 +1,6 @@
 // handdrawn_bar_palette.ogs
-// Recommended usage:
-// run.section("D:\path\to\handdrawn_bar_palette.ogs", Main);
-
 [Main]
 type "[handdrawn_bar_palette] applying...";
-int nColorStart = 1;
-int nColorNum = 8;
 
 color(1) = rgb(230, 126, 128);
 color(2) = rgb(247, 191, 105);
@@ -16,32 +11,12 @@ color(6) = rgb(113, 196, 201);
 color(7) = rgb(244, 163, 129);
 color(8) = rgb(188, 188, 188);
 
-int nLayers = page.nlayers;
-int iLayer, iPlot;
+// Compatibility mode: style currently active plot only.
+set -c 1;
+set -k 1;
+set -kf 1;
+set -t 15;
+set -w 1.2;
+legendupdate mode:=1;
 
-if(nLayers <= 0)
-{
-    type "[handdrawn_bar_palette] No active graph page/layer.";
-    break 1;
-}
-
-for(iLayer = 1; iLayer <= nLayers; iLayer++)
-{
-    layer -s %(iLayer);
-
-    // 经验做法：逐个激活前 20 个 plot（不存在的索引会被忽略）
-    for(iPlot = 1; iPlot <= 20; iPlot++)
-    {
-        layer -i %(iPlot);
-        int idx = mod(iPlot-1, nColorNum) + nColorStart;
-        set -c %(idx);
-        set -k %(idx);
-        set -kf 1;
-        set -t 15;
-        set -w 1.2;
-    }
-
-    legendupdate mode:=1;
-}
-
-type "[handdrawn_bar_palette] done.";
+type "[handdrawn_bar_palette] done. If no visible change, click a bar then run again.";
