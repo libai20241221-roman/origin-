@@ -11,9 +11,10 @@ python scripts/generate_handdrawn_palette.py
 ```
 
 ## GitHub Desktop 报错快速修复
-如果仓库里没有修复脚本，先用手工命令清理全局配置：
 ```bash
-git config --global --unset-all core.editor
-git config --global --unset-all diff.tool
-git config --global --unset-all merge.tool
+python fix_github_desktop_7zip_error.py --dry-run
+python fix_github_desktop_7zip_error.py
+
+# 若仍反复弹窗
+python fix_github_desktop_7zip_error.py --hard-reset-desktop
 ```

@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """修复 GitHub Desktop 在 Windows 下出现的“can't find 7-Zip ...”配置错误。
 
-该错误常见来源：
-1) Git 配置中的 editor/difftool/mergetool 指向了无效路径。
-2) GitHub Desktop 自身 settings.json 中仍保存了坏掉的 external editor/shell 路径。
+支持两种模式：
+1) 普通模式（默认）：清理 Git config + 清理 settings.json 中包含 7-Zip 的字段。
+2) 强制重置模式（--hard-reset-desktop）：备份后重置 GitHub Desktop 用户配置目录，
+   用于“最新版仍反复弹窗”的情况。
 """
 
 from __future__ import annotations
 
+import argparse
 import json
 import os
 import shutil
@@ -64,26 +66,21 @@ def summarize(entries: Iterable[ConfigEntry]) -> str:
     return "\n".join(lines)
 
 
-def guess_desktop_settings_path() -> Path | None:
+def guess_desktop_base_dir() -> Path | None:
     appdata = os.environ.get("APPDATA")
     if appdata:
-        p = Path(appdata) / "GitHub Desktop" / "settings.json"
+        p = Path(appdata) / "GitHub Desktop"
         if p.exists():
             return p
 
     home = Path.home()
-    candidates = [
-        home / "AppData" / "Roaming" / "GitHub Desktop" / "settings.json",
-        home / ".config" / "GitHub Desktop" / "settings.json",
-    ]
-    for p in candidates:
-        if p.exists():
-            return p
+    candidate = home / "AppData" / "Roaming" / "GitHub Desktop"
+    if candidate.exists():
+        return candidate
     return None
 
 
 def scrub_7zip_strings(node: Any, breadcrumb: str = "$") -> tuple[Any, list[str], bool]:
-    """递归清理 JSON 中包含 7-Zip 的字符串。返回(新对象, 命中路径, 是否变更)。"""
     hits: list[str] = []
     changed = False
 
@@ -116,32 +113,78 @@ def scrub_7zip_strings(node: Any, breadcrumb: str = "$") -> tuple[Any, list[str]
     return node, hits, False
 
 
-def clean_desktop_settings(path: Path, dry_run: bool) -> bool:
-    raw = path.read_text(encoding="utf-8")
-    data = json.loads(raw)
+def clean_desktop_settings(base_dir: Path, dry_run: bool) -> None:
+    settings = base_dir / "settings.json"
+    if not settings.exists():
+        print(f"未找到 settings.json：{settings}")
+        return
+
+    data = json.loads(settings.read_text(encoding="utf-8"))
     cleaned, hits, changed = scrub_7zip_strings(data)
 
     if not changed:
-        print(f"GitHub Desktop settings 未发现包含 '{PATTERN}' 的字段：{path}")
-        return True
+        print(f"settings.json 未发现包含 '{PATTERN}' 的字段。")
+        return
 
-    print(f"检测到 GitHub Desktop settings 异常字段（{path}）：")
+    print("检测到 settings.json 异常字段：")
     for h in hits:
         print(f"- {h}")
 
     if dry_run:
         print("当前为 --dry-run，仅显示，不写回 settings.json")
-        return True
+        return
 
-    backup = path.with_suffix(path.suffix + ".bak")
-    shutil.copy2(path, backup)
-    path.write_text(json.dumps(cleaned, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    print(f"已写回清理后的 settings.json，备份文件：{backup}")
-    return True
+    backup = settings.with_suffix(settings.suffix + ".bak")
+    shutil.copy2(settings, backup)
+    settings.write_text(json.dumps(cleaned, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    print(f"已写回清理后的 settings.json，备份：{backup}")
 
 
-def main() -> int:
-    dry_run = "--dry-run" in sys.argv
+def hard_reset_desktop(base_dir: Path, dry_run: bool) -> None:
+    targets = [
+        base_dir / "settings.json",
+        base_dir / "Local Storage",
+        base_dir / "Session Storage",
+    ]
+    backup_root = base_dir / "backup_before_reset"
+
+    print("将重置以下 GitHub Desktop 用户配置（会先备份）：")
+    for t in targets:
+        print(f"- {t}")
+
+    if dry_run:
+        print("当前为 --dry-run，仅显示，不执行重置。")
+        return
+
+    backup_root.mkdir(parents=True, exist_ok=True)
+    for target in targets:
+        if not target.exists():
+            continue
+        dst = backup_root / target.name
+        if dst.exists():
+            if dst.is_dir():
+                shutil.rmtree(dst)
+            else:
+                dst.unlink()
+        shutil.move(str(target), str(dst))
+        print(f"已备份并移除：{target} -> {dst}")
+
+    print("GitHub Desktop 配置重置完成。请重启 GitHub Desktop 并重新设置 Integrations。")
+
+
+def parse_args(argv: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dry-run", action="store_true", help="只检测不修改")
+    parser.add_argument(
+        "--hard-reset-desktop",
+        action="store_true",
+        help="备份并重置 GitHub Desktop 用户配置（用于反复弹窗）",
+    )
+    return parser.parse_args(argv)
+
+
+def main(argv: list[str] | None = None) -> int:
+    args = parse_args(argv if argv is not None else sys.argv[1:])
 
     # 1) 清理 Git config
     found: list[ConfigEntry] = []
@@ -152,7 +195,7 @@ def main() -> int:
         print("未发现包含 '7-Zip' 的 Git 配置项。")
     else:
         print(summarize(found))
-        if dry_run:
+        if args.dry_run:
             print("\n当前为 --dry-run，仅显示，不改动 Git 配置。")
         else:
             for entry in found:
@@ -161,14 +204,18 @@ def main() -> int:
                 else:
                     print(f"清理失败: {entry.scope} {entry.key}（可能需要管理员权限）")
 
-    # 2) 清理 GitHub Desktop settings
-    settings = guess_desktop_settings_path()
-    if settings is None:
-        print("未找到 GitHub Desktop settings.json（如果你是 Windows，请确认已安装并启动过 GitHub Desktop）。")
+    # 2) 处理 GitHub Desktop 配置
+    base_dir = guess_desktop_base_dir()
+    if base_dir is None:
+        print("未找到 GitHub Desktop 配置目录（请先启动过 GitHub Desktop）。")
     else:
-        clean_desktop_settings(settings, dry_run=dry_run)
+        print(f"检测到 GitHub Desktop 配置目录：{base_dir}")
+        if args.hard_reset_desktop:
+            hard_reset_desktop(base_dir, dry_run=args.dry_run)
+        else:
+            clean_desktop_settings(base_dir, dry_run=args.dry_run)
 
-    print("\n处理完成。建议重启 GitHub Desktop 后再次克隆。")
+    print("\n处理完成。建议重启 GitHub Desktop 后再次导入/克隆。")
     return 0
 
 
