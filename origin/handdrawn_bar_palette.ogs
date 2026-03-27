@@ -1,9 +1,6 @@
 // handdrawn_bar_palette.ogs
-// 用法：在 Origin 图窗口激活后，在 Script Window 执行：
-// run.section(origin\\handdrawn_bar_palette, Main);
-// 可选参数：
-//   @NColorStart: 起始色索引（默认 1）
-//   @NColorNum:   要应用的颜色数量（默认 8）
+// 推荐用法（绝对路径，最稳）：
+// run.section("D:\\your_path\\origin\\handdrawn_bar_palette.ogs", Main);
 
 [Main]
 // ---- 可配置参数 ----
@@ -13,7 +10,6 @@ if(@NColorNum==0)
     @NColorNum = 8;
 
 // 默认“手绘风”色板（柔和、低饱和）
-// Origin RGB() 形式
 color(1) = rgb(230, 126, 128);   // 玫瑰红
 color(2) = rgb(247, 191, 105);   // 蜂蜜黄
 color(3) = rgb(141, 199, 146);   // 鼠尾草绿
@@ -23,36 +19,39 @@ color(6) = rgb(113, 196, 201);   // 湖水青
 color(7) = rgb(244, 163, 129);   // 杏橙
 color(8) = rgb(188, 188, 188);   // 石墨灰
 
-// 获取图层和绘图数量
 int nLayers = layer.n;
 int iLayer, iPlot;
+
+if(nLayers <= 0)
+{
+    type "[handdrawn_bar_palette] 未检测到有效图层，请先激活一个柱状图窗口。";
+    break 1;
+}
 
 for(iLayer = 1; iLayer <= nLayers; iLayer++)
 {
     layer -s %(iLayer);
 
-    int nPlots = wks.nplots;
-    if(nPlots <= 0)
-        continue;
+    // 修正：图层中的绘图数量应使用 layer.nplots
+    int nPlots = layer.nplots;
 
-    // 针对图层内每个数据绘图（柱）应用填充色
+    if(nPlots <= 0)
+    {
+        type "[handdrawn_bar_palette] Layer %(iLayer) 没有可上色的 plot，已跳过。";
+        continue;
+    }
+
     for(iPlot = 1; iPlot <= nPlots; iPlot++)
     {
         int idx = mod(iPlot-1, @NColorNum) + @NColorStart;
 
-        // 选择绘图
         set %(iPlot) -c %(idx);   // 边框色
         set %(iPlot) -k %(idx);   // 填充色
         set %(iPlot) -kf 1;       // 实心填充
-
-        // 可选：轻微透明度，模拟手绘马克笔层叠
-        set %(iPlot) -t 15;
-
-        // 可选：边框加粗一点更像“描线”
-        set %(iPlot) -w 1.2;
+        set %(iPlot) -t 15;       // 轻微透明
+        set %(iPlot) -w 1.2;      // 轻微加粗边框
     }
 
-    // 让图例跟随绘图样式自动更新
     legendupdate mode:=1;
 }
 
