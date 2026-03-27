@@ -11,7 +11,12 @@ origin绘图转化成漫画手绘风
 python scripts/generate_handdrawn_palette.py
 ```
 
-## 可点击运行（EXE）
+## 可点击运行（无需先打包）
+```bash
+scripts\run_origin_style_studio.bat
+```
+
+## 可点击运行（EXE 打包）
 ```bash
 scripts\build_origin_style_studio_exe.bat
 ```

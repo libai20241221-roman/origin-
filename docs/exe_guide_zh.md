@@ -6,10 +6,39 @@
 - 自定义：配色、透明度、边框线宽、填充模式
 - 一键生成 `.ogs`，并复制 Origin 可执行命令
 
+## 0) 不打包也能直接双击运行（推荐先用）
+如果你遇到 `pip install pyinstaller` 报错，可以先双击：
+
+```text
+scripts\run_origin_style_studio.bat
+```
+
+它会直接启动 GUI（依赖本机 Python），不需要先打包 EXE。
+
 ## 1) 安装打包工具（仅一次）
 
 ```bash
 pip install pyinstaller
+```
+
+### 如果你出现 `check_hostname requires server_hostname`
+这是本机代理/证书/网络配置问题，先执行下面两条后再安装：
+
+```bash
+set HTTP_PROXY=
+set HTTPS_PROXY=
+```
+
+然后改用官方源重试：
+
+```bash
+pip install -i https://pypi.org/simple pyinstaller
+```
+
+如果网络环境受限，可用国内镜像：
+
+```bash
+pip install -i https://pypi.tuna.tsinghua.edu.cn/simple pyinstaller
 ```
 
 ## 2) 生成 EXE
@@ -26,7 +55,7 @@ dist\OriginStyleStudio.exe
 ```
 
 ## 3) 在 Origin 中应用
-1. 打开 `OriginStyleStudio.exe`
+1. 打开 `OriginStyleStudio.exe`（或 bat 直启 GUI）
 2. 选一个风格，调整参数，点击“生成 OGS”
 3. 点击“复制 Origin 执行命令”
 4. 粘贴到 Origin Script Window 执行
